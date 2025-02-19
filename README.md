@@ -1,156 +1,193 @@
-# RD-Pickpocket
+# Advanced Pickpocket System for QBCore
 
-An advanced NPC pickpocketing system for QBCore FiveM servers, featuring realistic mechanics, dynamic loot, and full integration with QB-Core and QS-Inventory.
+An advanced and feature-rich pickpocketing system for FiveM QBCore framework, offering realistic NPC interactions, progression system, and extensive configuration options.
+
+## License
+
+This project is licensed under GNU Public License v3. See the LICENSE file for details.
 
 ## Features
 
-- 🎯 Realistic Pickpocketing System
-- 📦 QB/QS-Inventory Support
-- 💰 Dynamic Loot System
-- ⚖️ Risk & Reward Mechanics
-- 🚔 Police Alert System
-- 💼 Multiple Wallet Types
-- ⚡ Optimized Performance
-- ⚙️ Fully Configurable
+- 🎯 Advanced targeting system with realistic restrictions
+- 📈 Player progression system with experience and levels
+- 🌡️ Dynamic suspicion system
+- 🚔 Integrated police alerts and evidence system
+- 💰 Configurable loot tables and wallet types
+- 🎮 Skill-based minigame integration
+- 🌍 Zone-based restrictions and bonuses
+- 🕒 Time and weather-based modifiers
+- 📊 Comprehensive statistics tracking
+- 🎥 Security camera detection system
+- 👮 Advanced NPC reactions
+- 🔧 Admin tools and debugging features
 
 ## Dependencies
 
 - QBCore Framework
 - qb-target
 - ox_lib
-- ps-dispatch
-- qs-inventory
+- PolyZone
+- oxmysql
 
 ## Installation
 
-1. Download the resource
-2. Place `rd-pickpocket` in your resources folder
-3. Add `ensure rd-pickpocket` to your server.cfg
-4. Configure the `config.lua` to your liking
-5. Restart your server
+1. Ensure you have all dependencies installed
+2. Place the `rd-pickpocket` folder in your server's resources directory
+3. Import the provided SQL file into your database
+4. Add `ensure rd-pickpocket` to your server.cfg
+
+```sql
+-- SQL Import Command
+mysql -u username -p database_name < pickpocket.sql
+```
 
 ## Configuration
 
-### General Settings
+The config.lua file allows extensive customization of the system:
+
 ```lua
-Config.Debug = false -- Enable debug mode
-Config.UseQBTarget = true -- Use qb-target system
-Config.TargetDistance = 2.0 -- Distance to target NPCs
-Config.PoliceRequired = 0 -- Minimum police required
-```
-
-### Cooldown Settings
-```lua
-Config.GlobalPlayerCooldown = 300 -- Player cooldown (seconds)
-Config.GlobalNPCCooldown = 1800 -- NPC cooldown (seconds)
-Config.EnableGlobalCooldowns = true -- Enable cooldown system
-```
-
-### Success Rates
-```lua
-Config.BaseSuccessRate = 70 -- Base success chance
-Config.AlertChance = 30 -- Police alert chance
-```
-
-## Usage
-
-### As a Player
-
-1. Approach any valid NPC
-2. Use the targeting system (default: Left ALT)
-3. Select "Pickpocket" option
-4. Complete the skillcheck
-5. Receive your rewards or face consequences
-
-### For Developers
-
-#### Check Cooldowns
-```lua
--- Server-side export
-local isOnCooldown = exports['rd-pickpocket']:IsPlayerOnCooldown(playerId)
-```
-
-#### Events
-```lua
--- Client-side success
-TriggerEvent('rd-pickpocket:client:attemptPickpocket', data)
-
--- Server-side success
-TriggerEvent('rd-pickpocket:server:pickpocketSuccess', netId)
-```
-
-## Wallet Types
-
-### Common Wallet (60% Chance)
-- 50-200 cash
-- Common items (phones, papers, etc.)
-
-### Business Wallet (30% Chance)
-- 200-500 cash
-- Valuable items (Rolex, gold chains)
-
-### Wealthy Wallet (10% Chance)
-- 500-1000 cash
-- High-value items (diamonds, gold bars)
-
-## Configuration Examples
-
-### Add New Loot Items
-```lua
-Config.RandomLoot["common"] = {
-    {item = "new_item", chance = 20, min = 1, max = 2}
+Config = {
+    Debug = false,
+    UseTarget = true,
+    MinimumPolice = 0,
+    AlertChance = 65,
+    CooldownTime = 300,
+    MaxPickpocketDistance = 2.0
 }
 ```
 
-### Modify Success Rates
+### Key Configuration Options
+
+- Police requirements
+- Cooldown timers
+- Success chances
+- Loot tables
+- Zone restrictions
+- Skill check difficulty
+- Progression rates
+- NPC behavior
+
+## Usage
+
+### Player Commands
+- `/pickpocketstats` - View your pickpocketing statistics
+
+### Admin Commands
+- `/pickpocketadmin` - Open admin menu
+- `/clearpickpocketcooldown [id]` - Clear cooldown for a player
+- `/resetpickpocket [id]` - Reset player's pickpocket data
+
+### Integration Example
+
 ```lua
-Config.BaseSuccessRate = 65 -- Lower success rate
-Config.AlertChance = 40 -- Higher police alert chance
+-- Check if player can be pickpocketed
+exports['rd-pickpocket']:CanPickpocket(target)
+
+-- Get player's pickpocket level
+exports['rd-pickpocket']:GetPlayerLevel()
 ```
+
+## NPC Configuration
+
+Configure different NPC types and their loot:
+
+```lua
+Config.NPCPickpocket = {
+    blacklistedPeds = {
+        'mp_m_shopkeep_01',
+        's_m_y_cop_01'
+    },
+    walletTypes = {
+        ['poor_wallet'] = 60,
+        ['standard_wallet'] = 35,
+        ['expensive_wallet'] = 5
+    }
+}
+```
+
+## Zones Configuration
+
+Set up restricted and bonus zones:
+
+```lua
+Config.RestrictedZones = {
+    {
+        coords = vector3(441.8, -982.4, 30.69),
+        radius = 50.0,
+        message = 'Cannot pickpocket near police station'
+    }
+}
+```
+
+## Progression System
+
+Players can level up their pickpocketing skills:
+- Experience gained from successful attempts
+- Higher levels provide better success chances
+- Unlock better loot possibilities
+- Reduce detection rates
+
+## Security Features
+
+- Anti-exploitation measures
+- Validation checks
+- Rate limiting
+- Secure loot generation
+- Event verification
+
+## Performance Optimization
+
+The resource includes:
+- Efficient ped caching
+- Optimized zone checking
+- Smart event handling
+- Resource cleanup
+- State management
 
 ## Troubleshooting
 
-### Common Issues
+Common issues and solutions:
 
-1. Targeting not working
+1. Target system not working
    - Ensure qb-target is properly installed
-   - Check Config.UseQBTarget setting
+   - Check target configuration
 
-2. No loot received
-   - Verify items exist in QS-Inventory
-   - Check inventory weight limits
+2. Database errors
+   - Verify SQL installation
+   - Check database credentials
 
-3. Police not being alerted
-   - Verify ps-dispatch is working
-   - Check Config.AlertChance setting
+3. Performance issues
+   - Enable debug mode for detailed logging
+   - Check server console for errors
 
 ## Support
 
 For support:
-1. Check the issues tab on GitHub
-2. Join our Discord (link)
-3. Open a new issue with detailed information
+1. Check the debug logs
+2. Review configuration
+3. Verify all dependencies are updated
+4. Check GitHub issues
 
 ## Contributing
 
 1. Fork the repository
-2. Create a new branch
-3. Make your changes
-4. Submit a pull request
-
-## License
-
-This project is licensed under the GPLV3 License - see the LICENSE file for details
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## Credits
 
-- Xnation RP
-- FiveM Community
+Developed by Ronin Development
+- Version: 1.0.0
+- Contact: https://discord.gg/t9UNB5UcRh
+- Framework: QBCore
 
 ## Changelog
 
 ### Version 1.0.0
 - Initial release
-- Base pickpocketing system
-- QS-Inventory integration
-- Police alert system
+- Core pickpocket functionality
+- Progression system
+- Police integration
+- Evidence system
