@@ -17,7 +17,7 @@ An advanced NPC pickpocketing system for QBCore FiveM servers, featuring realist
 
 - QBCore Framework
 - qb-target
-- qb-skillbar
+- ox_lib
 - ps-dispatch
 - qs-inventory
 
