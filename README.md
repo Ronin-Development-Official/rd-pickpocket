@@ -1,193 +1,128 @@
-# Advanced Pickpocket System for QBCore
+# QB Pickpocket
 
-An advanced and feature-rich pickpocketing system for FiveM QBCore framework, offering realistic NPC interactions, progression system, and extensive configuration options.
-
-## License
-
-This project is licensed under GNU Public License v3. See the LICENSE file for details.
+A realistic NPC pickpocketing system for QBCore with support for both QB-Inventory and QS-Inventory.
 
 ## Features
-
-- 🎯 Advanced targeting system with realistic restrictions
-- 📈 Player progression system with experience and levels
-- 🌡️ Dynamic suspicion system
-- 🚔 Integrated police alerts and evidence system
-- 💰 Configurable loot tables and wallet types
-- 🎮 Skill-based minigame integration
-- 🌍 Zone-based restrictions and bonuses
-- 🕒 Time and weather-based modifiers
-- 📊 Comprehensive statistics tracking
-- 🎥 Security camera detection system
-- 👮 Advanced NPC reactions
-- 🔧 Admin tools and debugging features
+- Realistic Pickpocketing System
+- Dynamic Loot System with different wallet types
+- Risk & Reward Mechanic with police alerts
+- Support for both QB-Inventory and QS-Inventory
+- Optimized performance with monitoring
+- Fully configurable settings
+- Player and NPC cooldown system
+- Blacklisted ped system
+- Performance monitoring system
 
 ## Dependencies
-
 - QBCore Framework
-- qb-target
-- ox_lib
-- PolyZone
-- oxmysql
+- QB-Target
+- PS-Dispatch
+- QB-Inventory or QS-Inventory
 
 ## Installation
 
-1. Ensure you have all dependencies installed
-2. Place the `rd-pickpocket` folder in your server's resources directory
-3. Import the provided SQL file into your database
-4. Add `ensure rd-pickpocket` to your server.cfg
+1. Add the following items to your `qb-core/shared/items.lua`:
+```lua
+['regular_wallet']         = {['name'] = 'regular_wallet',         ['label'] = 'Regular Wallet',         ['weight'] = 250,   ['type'] = 'item',   ['image'] = 'wallet.png',         ['unique'] = true,    ['useable'] = true,    ['shouldClose'] = true,    ['combinable'] = nil,   ['description'] = 'A standard leather wallet'},
+['premium_wallet']         = {['name'] = 'premium_wallet',         ['label'] = 'Premium Wallet',         ['weight'] = 300,   ['type'] = 'item',   ['image'] = 'wallet_premium.png', ['unique'] = true,    ['useable'] = true,    ['shouldClose'] = true,    ['combinable'] = nil,   ['description'] = 'A high-end designer wallet'},
+['empty_wallet']          = {['name'] = 'empty_wallet',          ['label'] = 'Empty Wallet',          ['weight'] = 200,   ['type'] = 'item',   ['image'] = 'wallet_empty.png',   ['unique'] = true,    ['useable'] = true,    ['shouldClose'] = true,    ['combinable'] = nil,   ['description'] = 'An empty wallet'}
+```
 
-```sql
--- SQL Import Command
-mysql -u username -p database_name < pickpocket.sql
+2. Add the wallet images to your inventory:
+   - For QB-Inventory: `qb-inventory/html/images/`
+   - For QS-Inventory: `qs-inventory/html/images/`
+
+3. Copy the `qb-pickpocket` folder to your resources folder
+
+4. Add to your server.cfg:
+```
+ensure qb-pickpocket
 ```
 
 ## Configuration
 
-The config.lua file allows extensive customization of the system:
+### config.lua Key Settings:
 
 ```lua
-Config = {
-    Debug = false,
-    UseTarget = true,
-    MinimumPolice = 0,
-    AlertChance = 65,
-    CooldownTime = 300,
-    MaxPickpocketDistance = 2.0
-}
-```
+Config.UseQBInventory = true -- Set to false if using qs-inventory
+Config.Debug = false -- Enable debug and performance monitoring
 
-### Key Configuration Options
+-- Cooldown Settings (in seconds)
+Config.PlayerCooldown = 300 -- 5 minutes cooldown between pickpocket attempts
+Config.NPCCooldown = 1800 -- 30 minutes before same NPC can be pickpocketed again
 
-- Police requirements
-- Cooldown timers
-- Success chances
-- Loot tables
-- Zone restrictions
-- Skill check difficulty
-- Progression rates
-- NPC behavior
+-- Success Rate Settings
+Config.BaseSuccessRate = 75 -- Base success rate (percentage)
+Config.PoliceAlertChance = 35 -- Chance of alerting police on any attempt
 
-## Usage
-
-### Player Commands
-- `/pickpocketstats` - View your pickpocketing statistics
-
-### Admin Commands
-- `/pickpocketadmin` - Open admin menu
-- `/clearpickpocketcooldown [id]` - Clear cooldown for a player
-- `/resetpickpocket [id]` - Reset player's pickpocket data
-
-### Integration Example
-
-```lua
--- Check if player can be pickpocketed
-exports['rd-pickpocket']:CanPickpocket(target)
-
--- Get player's pickpocket level
-exports['rd-pickpocket']:GetPlayerLevel()
-```
-
-## NPC Configuration
-
-Configure different NPC types and their loot:
-
-```lua
-Config.NPCPickpocket = {
-    blacklistedPeds = {
-        'mp_m_shopkeep_01',
-        's_m_y_cop_01'
+-- Money Type Settings
+Config.MoneyType = {
+    clean = {
+        enabled = true,     -- Enable clean money rewards
+        account = 'cash',   -- QB Account type for clean money
+        chance = 30        -- Chance (%) to get clean money
     },
-    walletTypes = {
-        ['poor_wallet'] = 60,
-        ['standard_wallet'] = 35,
-        ['expensive_wallet'] = 5
+    dirty = {
+        enabled = true,     -- Enable dirty money rewards
+        item = 'markedbills', -- Item to use for dirty money
+        chance = 70        -- Chance (%) to get dirty money
     }
 }
 ```
 
-## Zones Configuration
+## Usage Guide
 
-Set up restricted and bonus zones:
+### Basic Usage:
+1. Approach any NPC
+2. Use QB-Target to select the "Pickpocket" option
+3. If successful:
+   - Receive a wallet
+   - Can use the wallet from inventory to search it
+   - Find money (clean or dirty) and possible additional items
+4. If failed:
+   - NPC will react (run away or become aggressive)
+   - Possible police alert
 
+### Performance Monitoring:
+If Config.Debug = true:
+1. Automatic metrics every 15 minutes in server console:
+   - Total Attempts
+   - Success Rate
+   - Wallets Searched
+
+2. Use `/testpickpocket` command to see:
+   - Current Entity Checks
+   - Valid Targets
+   - Memory Usage
+   - Nearby valid peds
+
+### Admin Commands:
+- `/resetpickpocketcooldown` - Resets pickpocket cooldown (Admin Only)
+
+## Blacklisting NPCs
+Add ped models to Config.BlacklistedPeds to prevent them from being pickpocketed:
 ```lua
-Config.RestrictedZones = {
-    {
-        coords = vector3(441.8, -982.4, 30.69),
-        radius = 50.0,
-        message = 'Cannot pickpocket near police station'
-    }
+Config.BlacklistedPeds = {
+    's_m_y_cop_01',      -- Police Officer
+    's_m_y_sheriff_01',  -- Sheriff
+    's_m_m_security_01', -- Security Guard
+    -- Add more as needed
 }
 ```
 
-## Progression System
+## Performance Tips
+1. Adjust validation intervals based on server needs
+2. Monitor performance metrics regularly
+3. Adjust cooldown times for balance
+4. Configure police alert chance based on server activity
 
-Players can level up their pickpocketing skills:
-- Experience gained from successful attempts
-- Higher levels provide better success chances
-- Unlock better loot possibilities
-- Reduce detection rates
-
-## Security Features
-
-- Anti-exploitation measures
-- Validation checks
-- Rate limiting
-- Secure loot generation
-- Event verification
-
-## Performance Optimization
-
-The resource includes:
-- Efficient ped caching
-- Optimized zone checking
-- Smart event handling
-- Resource cleanup
-- State management
-
-## Troubleshooting
-
-Common issues and solutions:
-
-1. Target system not working
-   - Ensure qb-target is properly installed
-   - Check target configuration
-
-2. Database errors
-   - Verify SQL installation
-   - Check database credentials
-
-3. Performance issues
-   - Enable debug mode for detailed logging
-   - Check server console for errors
+## Known Issues
+- None currently reported
 
 ## Support
-
-For support:
-1. Check the debug logs
-2. Review configuration
-3. Verify all dependencies are updated
-4. Check GitHub issues
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+For support, please create an issue on the GitHub repository or contact through Discord.|
+(https://discord.gg/t9UNB5UcRh)
 
 ## Credits
-
-Developed by Ronin Development
-- Version: 1.0.0
-- Contact: https://discord.gg/t9UNB5UcRh
-- Framework: QBCore
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- Core pickpocket functionality
-- Progression system
-- Police integration
-- Evidence system
+Xnation (https://discord.gg/xnation-rp)
+Created for QBCore Framework
