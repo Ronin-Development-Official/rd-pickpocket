@@ -1,4 +1,4 @@
-# QB Pickpocket
+# RD Pickpocket
 
 A realistic NPC pickpocketing system for QBCore with support for both QB-Inventory and QS-Inventory.
 
